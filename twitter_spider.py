@@ -44,3 +44,4 @@ class TwitterMentionsSpider(scrapy.Spider):
             'url': response.url,
             'tsla_mentions': counter
         }
+
