@@ -1,7 +1,13 @@
 import scrapy
-from scrapy_selenium import SeleniumRequest
+import re
 import time
 import os
+from bs4 import BeautifulSoup
+from scrapy_selenium import SeleniumRequest
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 
 
 class TwitterMentionsSpider(scrapy.Spider):
@@ -33,15 +39,27 @@ class TwitterMentionsSpider(scrapy.Spider):
 
     def parse(self, response):
         time.sleep(10)  # Wait for 10 seconds before parsing
-        # Extracting text from the specified XPath
-        text = response.xpath(
-            '//*[contains(concat( " ", @class, " " ), concat( " ", "r-1ye8kvj", " " ))]').extract()
 
-        # Counting the number of mentions of '$TSLA'
-        counter = sum(1 for mention in text if '$TSLA' in mention)
+        # Get the Selenium driver
+        driver = response.meta['driver']
+
+        # Send END key press event 3 times with a 5-second delay
+        for _ in range(3):
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
+            time.sleep(5)
+
+        # Get the page source using BeautifulSoup
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        tweets = soup.find_all('div', class_='css-901oao css-bfa6kz r-m0bqgq r-1qd0xha r-n6v787 r-16dba41 r-1sf4r6n r-bcqeeo r-qvutc0')
+
+        # Counting the number of mentions
+        counter = 0
+        for tweet in tweets:
+            text = tweet.text
+            if re.search(r'\$[A-Za-z]{3,4}', text):
+                counter += 1
 
         yield {
             'url': response.url,
-            'tsla_mentions': counter
+            'mentions': counter
         }
-
