@@ -5,11 +5,10 @@ import os
 from bs4 import BeautifulSoup
 from scrapy_selenium import SeleniumRequest
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
 
+# There is an output.csv tracing the results, kindly reminder to check it.
 class TwitterMentionsSpider(scrapy.Spider):
     name = "twitter"
     allowed_domains = ["twitter.com"]
@@ -44,6 +43,7 @@ class TwitterMentionsSpider(scrapy.Spider):
         driver = response.meta['driver']
 
         # Send END key press event 3 times with a 5-second delay
+        # Because the Data isn't returning I'm trying to refresh the page to search for $cashing
         for _ in range(3):
             driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
             time.sleep(5)
